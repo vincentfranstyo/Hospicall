@@ -1,8 +1,10 @@
 import json
+import math
+import sys
+from typing import Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import Optional
 
 app = FastAPI()
 
@@ -19,19 +21,21 @@ class Address(BaseModel):
 
 
 class HealthFacility(BaseModel):
+    facility_id: str = None
     facility_name: str
     facility_type: str
     address: Address
-    coordinate: Coordinate
+    coordinates: Coordinate
+    phone_number: str
     bed_capacity: int
     doctor_count: int
 
 
 class FacilityUpdate(BaseModel):
-    facility_id: Optional[str]
     facility_name: Optional[str]
     facility_type: Optional[str]
-    address: Optional[dict]
+    address: Optional[Address]
+    phone_number: Optional[str]
     bed_capacity: Optional[int]
     doctor_count: Optional[int]
 
@@ -42,7 +46,11 @@ with open(json_filename, "r") as read_file:
     facilities = json.load(read_file)
 
 
-async def get_facility_ids():
+def distance(x1, y1, x2, y2):
+    return math.sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2))
+
+
+def get_facility_ids():
     return [facility["facility_id"] for facility in facilities]
 
 
@@ -55,16 +63,17 @@ async def root():
 async def get_health_facilities():
     fac_name_list = []
     for facility in facilities:
-        fac_name_list.append(facility.name)
+        fac_name_list.append(facility['facility_name'])
     return fac_name_list
 
 
 @app.get("/health-facility/{facility_id}")
 async def get_health_facility_by_id(facility_id: str):
-    if facility_id not in get_facility_ids():
+    facility_ids = get_facility_ids()
+    if facility_id not in facility_ids:
         return {"message": "The facility you are looking for is not available"}
     for facility in facilities:
-        if facility.facility_id == facility_id:
+        if facility['facility_id'] == facility_id:
             return facility
     return None
 
@@ -77,9 +86,10 @@ async def create_health_facility(facility_id: str, add_facility: HealthFacility)
         return {"message": "The facility with ID: " + facility_id + " is already there"}
 
     for facility in facilities:
-        if add_facility['coordinates'] == facility['coordinates']:
+        if add_facility.coordinates.longitude == facility['coordinates']['longitude'] and add_facility.coordinates.latitude == facility['coordinates']['latitude']:
             return {"message": "The facility at that coordinate already exists"}
 
+    add_facility.facility_id = facility_id
     facilities.append(add_facility.model_dump())
     with open(json_filename, "w") as write_file:
         json.dump(facilities, write_file)
@@ -94,8 +104,8 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate):
         return {"The facility you are looking for is not available"}
 
     for facility in facilities:
-        if facility['id'] == facility_id:
-            update_data = {key: value for key, value in update_fac.items() if value}
+        if facility['facility_id'] == facility_id:
+            update_data = {key: value for key, value in update_fac.model_dump().items() if value}
             facility.update(update_data)
 
     with open(json_filename, 'w') as update_file:
@@ -106,18 +116,40 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate):
 
 @app.delete('/health-facility/{facility_id}')
 async def delete_health_facility(facility_id: str):
+    global facilities
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"message": "The facility you are looking for is not available"}
 
+    facilities_to_delete = []
     for facility in facilities:
         if facility['facility_id'] == facility_id:
-            del facility
+            facilities_to_delete.append(facility)
+    if not facilities_to_delete:
+        return {"message": "The facility you are looking for is not available"}
+
+    fac_name = facilities_to_delete[0]['facility_name']
+    facilities = [facility for facility in facilities if facility not in facilities_to_delete]
 
     with open(json_filename, 'w') as delete_file:
         json.dump(facilities, delete_file)
 
+    return {"Message": "Healthcare " + fac_name + " deleted successfully"}
 
-@app.get("/call-nearest-health-facility")
+
+@app.post("/call-nearest-health-facility")
 async def call_nearest_health_facility(coordinate: Coordinate):
-    return None
+    curr_dis = sys.maxsize
+    closest_facilities = []
+    for facility in facilities:
+        dis = distance(facility['coordinates']['longitude'], facility['coordinates']['latitude'], coordinate.longitude, coordinate.latitude)
+        if dis < curr_dis:
+            curr_dis = dis
+            closest_facilities = [
+                {"Message": "The closest facility is " + facility['facility_name'] + ". The phone number is " + facility['phone_number'] + "\n"}
+            ]
+
+        elif dis == curr_dis:
+            closest_facilities.append({"Another closest facility is " + facility['facility_name'] + ". The phone number is " + facility['phone_number']})
+
+    return {"Message": "We are making a call and giving a notification to the facilities\n", "closest_facilities": closest_facilities}

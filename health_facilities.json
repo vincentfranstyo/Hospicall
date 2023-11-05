@@ -9,9 +9,10 @@
       "Province": "Jawa Barat"
     },
     "coordinates": {
-      "latitude": -0.3232432,
-      "longitude": -0.3232432
+      "latitude": 3,
+      "longitude": 3
     },
+    "phone_number": "+6285365347656",
     "bed_capacity": 200,
     "doctor_count": 50
   },
@@ -25,9 +26,10 @@
       "Province": "Jawa Barat"
     },
     "coordinates": {
-      "latitude": -0.3232432,
-      "longitude": -0.3232432
+      "latitude": 12,
+      "longitude": 12
     },
+    "phone_number": "+6285365347656",
     "bed_capacity": 2,
     "doctor_count": 20
   }
