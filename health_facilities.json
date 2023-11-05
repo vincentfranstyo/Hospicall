@@ -1,0 +1,34 @@
+[
+  {
+    "facility_id": "1",
+    "facility_name": "Rumah sakit Borromeus",
+    "facility_type": "Hospital",
+    "address": {
+      "street": "Jl. Ir. H. Djuanda No. 34",
+      "city": "Bandung",
+      "Province": "Jawa Barat"
+    },
+    "coordinates": {
+      "latitude": -0.3232432,
+      "longitude": -0.3232432
+    },
+    "bed_capacity": 200,
+    "doctor_count": 50
+  },
+  {
+    "facility_id": "2",
+    "facility_name": "Dago Pakar Clinic",
+    "facility_type": "Clinic",
+    "address": {
+      "street": "Jl. Dago Pakar No. 23",
+      "city": "Bandung",
+      "Province": "Jawa Barat"
+    },
+    "coordinates": {
+      "latitude": -0.3232432,
+      "longitude": -0.3232432
+    },
+    "bed_capacity": 2,
+    "doctor_count": 20
+  }
+]
