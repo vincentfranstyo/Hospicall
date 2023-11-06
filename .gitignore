@@ -78,3 +78,5 @@ dmypy.json
 .pyre/
 .pytype/
 cython_debug/
+.vercel
+node_modules
