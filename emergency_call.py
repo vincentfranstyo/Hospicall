@@ -26,6 +26,7 @@ def distance_by_long_and_lat(coor1: Coordinate, coor2: Coordinate):
     return d
 
 
+# TODO: mengurutkan fasilitas kesehatan dan dimasukkan ke array
 @router.get("/")
 async def get_healthcare_number(longitude: float, latitude: float):
     closest_facilities = {}
@@ -44,6 +45,7 @@ async def get_healthcare_number(longitude: float, latitude: float):
     return {"closest_facilities": closest_facilities}
 
 
+# TODO: Notifikasi
 @router.post('/')
 async def make_call(longitude: float, latitude: float):
     closest_facilities = await get_healthcare_number(longitude, latitude)
