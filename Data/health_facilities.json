@@ -1,23 +1,40 @@
 [
   {
     "facility_id": "1",
-    "facility_name": "Rumah sakit Borromeus",
-    "facility_type": "Hospital",
+    "facility_name": "Rumah Sakit Uhuy",
+    "facility_type": "RS",
     "address": {
       "street": "Jl. Ir. H. Djuanda No. 34",
       "city": "Bandung",
       "Province": "Jawa Barat"
     },
     "coordinates": {
-      "longitude": 3,
-      "latitude": 3
+      "longitude": 0.1,
+      "latitude": 0.1
     },
     "phone_number": "+6285365347656",
     "bed_capacity": 200,
-    "doctor_count": 50
+    "doctor_count": 10
   },
   {
     "facility_id": "2",
+    "facility_name": "Apotik Sangkuriang",
+    "facility_type": "apotik",
+    "address": {
+      "street": "Jl. Sangkuriang No. 23",
+      "city": "Bandung",
+      "province": "Jawa Barat"
+    },
+    "coordinates": {
+      "longitude": 10.54345,
+      "latitude": 6.76453
+    },
+    "phone_number": "+6289645636754",
+    "bed_capacity": 2,
+    "doctor_count": 10
+  },
+  {
+    "facility_id": "3",
     "facility_name": "Dago Pakar Clinic",
     "facility_type": "Clinic",
     "address": {
@@ -26,8 +43,8 @@
       "Province": "Jawa Barat"
     },
     "coordinates": {
-      "longitude": 12,
-      "latitude": 12
+      "longitude": -10.2,
+      "latitude": -15.2323
     },
     "phone_number": "+6285365347656",
     "bed_capacity": 2,
