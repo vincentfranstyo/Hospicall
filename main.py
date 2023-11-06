@@ -1,17 +1,29 @@
 import json
 import math
 import sys
-from typing import Optional
+from typing import Optional, Any
 
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 app = FastAPI()
 
 
 class Coordinate(BaseModel):
-    latitude: float
     longitude: float
+    latitude: float
+
+    @validator('longitude')
+    def validate_longitude(cls, v):
+        if not -180 <= v <= 180:
+            raise ValueError('longitude must be between -180 and 180')
+        return v
+
+    @validator('latitude')
+    def validate_latitude(cls, v):
+        if not -90 <= v <= 90:
+            raise ValueError('latitude must be between -90 and 90')
+        return v
 
 
 class Address(BaseModel):
@@ -46,8 +58,15 @@ with open(json_filename, "r") as read_file:
     facilities = json.load(read_file)
 
 
-def distance(x1, y1, x2, y2):
-    return math.sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2))
+def distance_by_long_and_lat(coor1: Coordinate, coor2: Coordinate):
+    lon1, lat1 = math.radians(coor1.longitude), math.radians(coor1.latitude)
+    lon2, lat2 = math.radians(coor2.longitude), math.radians(coor2.latitude)
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = 6371 * c  # Radius of the Earth in kilometers
+    return round(distance, 2)
 
 
 def get_facility_ids():
@@ -80,7 +99,7 @@ async def get_health_facility_by_id(facility_id: str):
 
 @app.post("/health-facility/{facility_id}")
 async def create_health_facility(facility_id: str, add_facility: HealthFacility):
-    add_facility.model_dump()['id'] = facility_id
+    add_facility.dict()['id'] = facility_id
     facility_ids = get_facility_ids()
     if facility_id in facility_ids:
         return {"message": "The facility with ID: " + facility_id + " is already there"}
@@ -90,7 +109,7 @@ async def create_health_facility(facility_id: str, add_facility: HealthFacility)
             return {"message": "The facility at that coordinate already exists"}
 
     add_facility.facility_id = facility_id
-    facilities.append(add_facility.model_dump())
+    facilities.append(add_facility.dict())
     with open(json_filename, "w") as write_file:
         json.dump(facilities, write_file)
 
@@ -105,7 +124,7 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate):
 
     for facility in facilities:
         if facility['facility_id'] == facility_id:
-            update_data = {key: value for key, value in update_fac.model_dump().items() if value}
+            update_data = {key: value for key, value in update_fac.dict().items() if value}
             facility.update(update_data)
 
     with open(json_filename, 'w') as update_file:
@@ -137,19 +156,21 @@ async def delete_health_facility(facility_id: str):
     return {"Message": "Healthcare " + fac_name + " deleted successfully"}
 
 
-@app.post("/call-nearest-health-facility")
-async def call_nearest_health_facility(coordinate: Coordinate):
+@app.get("/call-nearest-health-facility/")
+async def call_nearest_health_facility(longitude: float, latitude: float):
+    current_coor = Coordinate(longitude=longitude, latitude=latitude)
     curr_dis = sys.maxsize
     closest_facilities = []
     for facility in facilities:
-        dis = distance(facility['coordinates']['longitude'], facility['coordinates']['latitude'], coordinate.longitude, coordinate.latitude)
+        facility_coor = Coordinate(longitude=facility['coordinates']['longitude'], latitude=facility['coordinates']['latitude'])
+        dis = distance_by_long_and_lat(facility_coor, current_coor)
         if dis < curr_dis:
             curr_dis = dis
             closest_facilities = [
-                {"Message": "The closest facility is " + facility['facility_name'] + ". The phone number is " + facility['phone_number'] + "\n"}
+                {"Message": "The closest facility is " + facility['facility_name'] + ". The phone number is " + facility['phone_number']}
             ]
 
         elif dis == curr_dis:
             closest_facilities.append({"Another closest facility is " + facility['facility_name'] + ". The phone number is " + facility['phone_number']})
 
-    return {"Message": "We are making a call and giving a notification to the facilities\n", "closest_facilities": closest_facilities}
+    return {"Message": "We are making a call and giving a notification to the facilities", "closest_facilities": closest_facilities}
