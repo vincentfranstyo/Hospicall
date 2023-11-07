@@ -1,2 +1,0 @@
-url = "https://pvkukdksbeqjrhvftili.supabase.co"
-api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2a3VrZGtzYmVxanJodmZ0aWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTkzMjI4MTEsImV4cCI6MjAxNDg5ODgxMX0.26oVr_Zwn2e7OuxVn8tQqrnf4huGl-ltPESKdLQWbJE"

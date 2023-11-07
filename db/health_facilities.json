@@ -6,7 +6,7 @@
     "address": {
       "street": "Jl. Ir. H. Djuanda No. 34",
       "city": "Bandung",
-      "Province": "Jawa Barat"
+      "province": "Jawa Barat"
     },
     "coordinates": {
       "longitude": 0.1,

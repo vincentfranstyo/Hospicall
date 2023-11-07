@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter
 
 from models import HealthFacility, FacilityUpdate
+from db.supabase import create_supabase_client
 
 router = APIRouter()
 
@@ -43,8 +44,7 @@ async def create_health_facility(facility_id: str, add_facility: HealthFacility)
         return {"message": "The facility with ID: " + facility_id + " is already there"}
 
     for facility in facilities:
-        if add_facility.coordinates.longitude == facility['coordinates'][
-            'longitude'] and add_facility.coordinates.latitude == facility['coordinates']['latitude']:
+        if add_facility.coordinates.longitude == facility['coordinates']['longitude'] and add_facility.coordinates.latitude == facility['coordinates']['latitude']:
             return {"message": "The facility at that coordinate already exists"}
 
     add_facility.facility_id = facility_id
