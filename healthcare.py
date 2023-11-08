@@ -1,5 +1,3 @@
-import json
-
 from fastapi import APIRouter
 
 from db.supabase import create_supabase_client
@@ -108,7 +106,12 @@ async def delete_health_facility(facility_id: str):
 
     fac_name = facilities_to_delete[0]['facility_name']
     healthcares = [facility for facility in healthcares if facility not in facilities_to_delete]
+    try:
+        facs = save_to_db(healthcares)
+        return [{"facilities": healthcares},
+                {"Message": "Healthcare " + fac_name + " deleted successfully"}] if facs else [
+            {"message": "Failed to delete " + fac_name}]
 
-    facs = save_to_db(healthcares)
-
-    return {"Message": "Healthcare " + fac_name + " deleted successfully"}
+    except Exception as e:
+        print("Error: ", e)
+        return [{"message": "Failed to delete " + fac_name}]
