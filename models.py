@@ -1,10 +1,23 @@
 from datetime import datetime
 
 import randomtimestamp
+import json
 from pydantic import BaseModel, validator
 from typing import Optional
 
-from call_logs import get_call_ids
+from db.supabase_manager import create_supabase_client
+
+supabase_client = create_supabase_client()
+
+
+def get_calls():
+    try:
+        response = supabase_client.table("call_logs").select("*").execute()
+        calls = response.data
+        return calls
+    except Exception as e:
+        print(f"Error retrieving calls: {str(e)}")
+        return {"message": "no data retrieved"}
 
 
 class Coordinate(BaseModel):
@@ -51,12 +64,13 @@ class FacilityUpdate(BaseModel):
 
 
 class CallLog(BaseModel):
-    call_id: str = str(int(get_call_ids()[-1]) + 1)
+    id: str
     call_date: str = datetime.now().strftime("%Y-%m-%d")
     call_time: str = datetime.now().strftime("%H:%M:%S")
-    callee_number: str = "+6287890765"
+    callee_number: str = "+6285365347656"
     call_duration: str = randomtimestamp.randomtimestamp().strftime("%H:%M:%S")
     call_status: str = "completed"
+    caller_number: str = "+6285368768767"
 
 
 class UpdateCall(BaseModel):
@@ -65,3 +79,4 @@ class UpdateCall(BaseModel):
     callee_number: Optional[str]
     call_duration: Optional[str]
     call_status: Optional[str]
+    caller_number: Optional[str]

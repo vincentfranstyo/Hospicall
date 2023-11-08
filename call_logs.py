@@ -2,33 +2,33 @@ import json
 
 from fastapi import APIRouter
 
+from db.supabase_manager import create_supabase_client
 from models import CallLog, UpdateCall
-from db.supabase import create_supabase_client
 
 supabase_client = create_supabase_client()
 
 
 def get_call_ids():
     calls = get_calls()
-    return [call['call_id'] for call in calls]
+    call_ids = [int(call.get('id')) for call in calls]
+    call_ids.sort()  # Sort the list in ascending order
+    return call_ids
 
 
 def get_calls():
-    calls = supabase_client.from_("Call Logs").select("*").execute()
-    return calls
+    try:
+        response = supabase_client.table("call_logs").select("*").execute()
+        calls = response.data
+        return calls
+    except Exception as e:
+        print(f"Error retrieving calls: {str(e)}")
+        return {"message": "no data retrieved"}
 
 
-def write_to_db():
-    call = supabase_client.from_("Call Logs").insert(call_logs).execute()
-    return call
-
-# call_logs_json = 'db/call_logs.json'
-#
-#
-# def get_call_ids():
-#     with open(call_logs_json, "r") as call_file:
-#         call_in_logs = json.load(call_file)
-#     return [call['call_id'] for call in call_in_logs]
+def write_to_db(calls):
+    json_call = json.dumps(calls)
+    supabase_client.table("call_logs").insert(json_call).execute()
+    return json_call
 
 
 # TODO: ini IDnya masi belum auto increment, cuman 1 kali doang. Nextnya ngga increment
@@ -36,82 +36,81 @@ router = APIRouter()
 call_logs = get_calls()
 
 
+@router.get('/test')
+async def test():
+    return get_calls()
+
+
 @router.get('/')
 async def get_call_logs():
-    calls = get_calls()
-    return calls
+    return get_calls()
 
 
 @router.get('/{call_id}')
 async def get_call_log_by_id(call_id: str):
-    for call in call_logs:
-        if call['call_id'] == call_id:
-            return call
+    call = supabase_client.table('call_logs').select("*").eq("id", call_id).execute()
+    return call.data
 
 
 @router.post('/')
 async def create_call_log():
     try:
-        add_call = CallLog()
+        call_ids = get_call_ids()
+        call_id = str(call_ids[-1] + 1)
+
+        add_call = CallLog(id=call_id)
         call_added = add_call.dict()
 
-        call_logs.append(call_added)
+        call = supabase_client.table("call_logs").insert(call_added).execute()
 
-        call = supabase_client.from_("Call Logs").insert(call_logs).execute()
-        return [{"call_made": call_added}, {"message": "The call logs added successfully"}] if call else [{"message": "Call Logs addition failed"}]
-
+        if call:
+            return [{"call_made": call_added}, {"message": "The call log was added successfully"}]
+        else:
+            print("Call log addition failed. Retrying with a new ID.")
     except Exception as e:
-        print("Error: ", e)
-        return [{"message": "Call Logs addition failed"}]
+        print("Error:", e)
+        return [{"message": "Call log addition failed"}]
 
 
-@router.put("/{call_id}")
+@router.put('/{call_id}')
 async def update_call_log(call_id: str, update_call: UpdateCall):
+    call_ids = [str(call_id) for call_id in get_call_ids()]
+    if call_id not in call_ids:
+        return {"message": "The call you are referring to is not available"}
+
+    # TODO: Fix this shit
     try:
-        call_ids = get_call_ids()
-        if call_id not in call_ids:
-            return {"message": "The call you are referring to is not available"}
+        old_data = supabase_client.table("call_logs").select("*").eq("id", call_id).execute()
 
-        for i, call in enumerate(call_logs):
-            if call['call_id'] == call_id:
-                update_data = {key: value for key, value in update_call.dict().items() if value}
-                call.update(update_data)
-                call_logs[i] = call
+        updated_data = old_data.data
+        if update_call.call_date:
+            updated_data['call_date'] = update_call.call_date
+        if update_call.call_status:
+            updated_data['call_status'] = update_call.call_status
 
-        call = write_to_db()
+        call = supabase_client.table("call_logs").update(updated_data).eq("id", call_id).execute()
 
-        return [{"call updated": call}, {"message": "Call log updated successfully"}] if call else [{"message": "Call log updated failed"}]
+        if call:
+            return [{"call updated": call}, {"message": "Call log updated successfully"}]
+        else:
+            return [{"message": "Call log update failed"}]
 
     except Exception as e:
         print("Exception", e)
-        return [{"call updated"}]
+        return [{"call update failed"}]
 
 
 @router.delete('/{call_id}')
 async def delete_call_log(call_id: str):
     try:
-        global call_logs
-        call_ids = get_call_ids()
+        call_ids = [str(call_id) for call_id in get_call_ids()]
         if call_id not in call_ids:
             return {"message": "The call log you are looking for is not available"}
 
-        call_to_delete = []
-        for call in call_logs:
-            if call['call_id'] == call_id:
-                call_to_delete.append(call)
+        call = supabase_client.table("call_logs").delete().eq("id", call_id).execute()
 
-        if not call_to_delete:
-            return {"message": "The call log you are looking for is not available"}
-
-        call_logs = [call for call in call_logs if call not in call_to_delete]
-
-        call = write_to_db()
-
-        return [{"call ": call}, {"message": "Call log deleted successfully"}] if call else [
-            {"message": "Call log delete failed"}]
+        return [{"message": "Call log with ID " + call_id + " deleted successfully"}] if call else [{"message": "Call log delete failed"}]
 
     except Exception as e:
         print("Exception", e)
         return [{"call delete failed"}]
-
-

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from db.supabase import create_supabase_client
+from db.supabase_manager import create_supabase_client
 from models import HealthFacility, FacilityUpdate
 
 router = APIRouter()
@@ -8,7 +8,7 @@ supabase_client = create_supabase_client()
 
 
 def get_facilities():
-    facs = supabase_client.from_("Health Facilities").select("*").execute()
+    facs = supabase_client.from_("healthcares").select("*").execute()
     return facs
 
 
@@ -19,7 +19,7 @@ def get_facility_ids():
 
 def save_to_db(healthcares):
     try:
-        facs = supabase_client.from_("Health Facilities").insert(healthcares).execute()
+        facs = supabase_client.from_("healthcares").insert(healthcares).execute()
         return facs
     except Exception as e:
         print("Error inserting")
