@@ -1,51 +1,10 @@
-from fastapi import APIRouter
-from pydantic import BaseModel, validator
-from typing import Optional, Any
+from fastapi import APIRouter, Depends, HTTPException, status
 import json
+from Models.user import UserJSON
 
 
-class Coordinate(BaseModel):
-    longitude: float
-    latitude: float
-
-    @validator('longitude')
-    def validate_longitude(cls, v):
-        if not -180 <= v <= 180:
-            raise ValueError('longitude must be between -180 and 180')
-        return v
-
-    @validator('latitude')
-    def validate_latitude(cls, v):
-        if not -90 <= v <= 90:
-            raise ValueError('latitude must be between -90 and 90')
-        return v
-
-
-class Address(BaseModel):
-    street: str
-    city: str
-    province: str
-
-
-class HealthFacility(BaseModel):
-    facility_id: str = None
-    facility_name: str
-    facility_type: str
-    address: Address
-    coordinates: Coordinate
-    phone_number: str
-    bed_capacity: int
-    doctor_count: int
-
-
-class FacilityUpdate(BaseModel):
-    facility_name: Optional[str]
-    facility_type: Optional[str]
-    address: Optional[Address]
-    phone_number: Optional[str]
-    bed_capacity: Optional[int]
-    doctor_count: Optional[int]
-
+from Models.models import HealthFacility, FacilityUpdate
+from Utils.auth import get_current_user
 
 router = APIRouter()
 
@@ -78,8 +37,13 @@ async def get_health_facility_by_id(facility_id: str):
     return None
 
 
-@router.post("/{facility_id}")
-async def create_health_facility(facility_id: str, add_facility: HealthFacility):
+@router.post("/new_facilities")
+async def create_health_facility(facility_id: str, add_facility: HealthFacility, user: UserJSON = Depends(get_current_user)):
+    if not user.admin_status:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have admin privileges"
+        )
     add_facility.dict()['facility_id'] = facility_id
     facility_ids = get_facility_ids()
     if facility_id in facility_ids:
@@ -97,8 +61,13 @@ async def create_health_facility(facility_id: str, add_facility: HealthFacility)
     return {"message": "Facility added successfully"}
 
 
-@router.put("/{facility_id}")
-async def update_health_facility(facility_id: str, update_fac: FacilityUpdate):
+@router.put("/update_facility")
+async def update_health_facility(facility_id: str, update_fac: FacilityUpdate, user: UserJSON = Depends(get_current_user)):
+    if not user.admin_status:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have admin privileges"
+        )
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"The facility you are looking for is not available"}
@@ -114,7 +83,7 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate):
     return {"message": "Facilities updated successfully"}
 
 
-@router.delete('/{facility_id}')
+@router.delete('/delete_facility')
 async def delete_health_facility(facility_id: str):
     global facilities
     facility_ids = get_facility_ids()

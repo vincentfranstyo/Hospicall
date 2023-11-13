@@ -2,8 +2,8 @@ from math import cos, asin, sqrt, pi
 import sys
 import json
 
-from healthcare import Coordinate
-from call_logs import create_call_log, update_call_log, UpdateCall
+from Models.models import UpdateCall, Coordinate
+from Utils.call_logs import create_call_log, update_call_log
 from fastapi import APIRouter
 
 router = APIRouter()

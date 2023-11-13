@@ -1,35 +1,11 @@
-import randomtimestamp
+
 from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional, Any
-from datetime import datetime
+
 import json
 
+from Models.models import CallLog, get_call_ids, UpdateCall
+
 call_logs_json = 'Data/call_logs.json'
-
-
-def get_call_ids():
-    with open(call_logs_json, "r") as call_file:
-        call_in_logs = json.load(call_file)
-    return [call['call_id'] for call in call_in_logs]
-
-
-# TODO: ini IDnya masi belum auto increment, cuman 1 kali doang. Nextnya ngga increment
-class CallLog(BaseModel):
-    call_id: str = str(int(get_call_ids()[-1]) + 1)
-    call_date: str = datetime.now().strftime("%Y-%m-%d")
-    call_time: str = datetime.now().strftime("%H:%M:%S")
-    callee_number: str = "+6287890765"
-    call_duration: str = randomtimestamp.randomtimestamp().strftime("%H:%M:%S")
-    call_status: str = "completed"
-
-
-class UpdateCall(BaseModel):
-    call_date: Optional[str]
-    call_time: Optional[str]
-    callee_number: Optional[str]
-    call_duration: Optional[str]
-    call_status: Optional[str]
 
 
 router = APIRouter()
