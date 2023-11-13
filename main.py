@@ -6,7 +6,6 @@ from Utils.auth import router as auth_router
 
 app = FastAPI()
 
-
 app.include_router(call_router, prefix='/call')
 app.include_router(healthcare_router, prefix='/healthcare')
 app.include_router(emergency_call_router, prefix='/emergency')

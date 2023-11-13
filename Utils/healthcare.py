@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 import json
 from Models.user import UserJSON
 
-
 from Models.models import HealthFacility, FacilityUpdate
 from Utils.auth import get_current_user
 
@@ -27,7 +26,9 @@ async def get_health_facilities():
 
 
 @router.get("/{facility_id}")
-async def get_health_facility_by_id(facility_id: str):
+async def get_health_facility_by_id(facility_id: str, user: UserJSON = Depends(get_current_user)):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please do register")
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"message": "The facility you are looking for is not available"}
@@ -38,12 +39,10 @@ async def get_health_facility_by_id(facility_id: str):
 
 
 @router.post("/new_facilities")
-async def create_health_facility(facility_id: str, add_facility: HealthFacility, user: UserJSON = Depends(get_current_user)):
+async def create_health_facility(facility_id: str, add_facility: HealthFacility,
+                                 user: UserJSON = Depends(get_current_user)):
     if not user.admin_status:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User does not have admin privileges"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
     add_facility.dict()['facility_id'] = facility_id
     facility_ids = get_facility_ids()
     if facility_id in facility_ids:
@@ -62,12 +61,10 @@ async def create_health_facility(facility_id: str, add_facility: HealthFacility,
 
 
 @router.put("/update_facility")
-async def update_health_facility(facility_id: str, update_fac: FacilityUpdate, user: UserJSON = Depends(get_current_user)):
+async def update_health_facility(facility_id: str, update_fac: FacilityUpdate,
+                                 user: UserJSON = Depends(get_current_user)):
     if not user.admin_status:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User does not have admin privileges"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"The facility you are looking for is not available"}
