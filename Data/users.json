@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "first_name": "Vincent",
+    "last_name": "Franstyo",
+    "email": "testvincent@gmail.com",
+    "username": "testvincent",
+    "hashed_password": "$2a$04$M.FFCq3svZiF.Lt4AMK1geRw29eJHiLjcDU1gAqygSAznqw85W8OO",
+    "phone_number": "+6285368768767",
+    "admin_status": true
+  },
+  {
+    "id": "2",
+    "first_name": "Ngungung",
+    "last_name": "Tangtang",
+    "email": "testtang@gmail.com",
+    "username": "budi",
+    "hashed_password": "$2a$04$dLL5suc4vQDka.ffwUM1ueDtEkTZ01w3EHM4ulHIOQnYBNg5.choO",
+    "phone_number": "+6285387675434",
+    "admin_status": false
+  }
+]
