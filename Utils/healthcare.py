@@ -81,7 +81,9 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate,
 
 
 @router.delete('/delete_facility')
-async def delete_health_facility(facility_id: str):
+async def delete_health_facility(facility_id: str, user: UserJSON = Depends(get_current_user)):
+    if not user.admin_status:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
     global facilities
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
