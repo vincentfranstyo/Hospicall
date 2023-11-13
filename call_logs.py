@@ -82,22 +82,25 @@ async def update_call_log(call_id: str, update_call: UpdateCall):
     try:
         old_data = supabase_client.table("call_logs").select("*").eq("id", call_id).execute()
 
-        updated_data = old_data.data
-        if update_call.call_date:
-            updated_data['call_date'] = update_call.call_date
-        if update_call.call_status:
-            updated_data['call_status'] = update_call.call_status
+        if old_data:
+            new_data = old_data.data[0]
+            updated_data = {key: value for key, value in update_call.dict().items() if value}
 
-        call = supabase_client.table("call_logs").update(updated_data).eq("id", call_id).execute()
+            for key, value in updated_data.items():
+                new_data[key] = value
 
-        if call:
-            return [{"call updated": call}, {"message": "Call log updated successfully"}]
+            call = supabase_client.table("call_logs").update([new_data]).eq("id", call_id).execute()
+
+            if call:
+                return [{"call updated": call.data[0]}, {"message": "Call log updated successfully"}]
+            else:
+                return [{"message": "Call log update failed"}]
         else:
-            return [{"message": "Call log update failed"}]
+            return [{"message": "The call you are referring to is not available"}]
 
     except Exception as e:
         print("Exception", e)
-        return [{"call update failed"}]
+        return [{"Exception": str(e)}]
 
 
 @router.delete('/{call_id}')
@@ -109,7 +112,8 @@ async def delete_call_log(call_id: str):
 
         call = supabase_client.table("call_logs").delete().eq("id", call_id).execute()
 
-        return [{"message": "Call log with ID " + call_id + " deleted successfully"}] if call else [{"message": "Call log delete failed"}]
+        return [{"message": "Call log with ID " + call_id + " deleted successfully"}] if call else [
+            {"message": "Call log delete failed"}]
 
     except Exception as e:
         print("Exception", e)
