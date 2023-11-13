@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import randomtimestamp
-import json
 from pydantic import BaseModel, validator
 from typing import Optional
 
@@ -44,20 +43,27 @@ class Address(BaseModel):
 
 
 class HealthFacility(BaseModel):
-    facility_id: str = None
-    facility_name: str
-    facility_type: str
-    address: Address
-    coordinates: Coordinate
+    id: str
+    name: str
+    type: str
+    city: str
+    street: str
+    province: str
+    longitude: float
+    latitude: float
     phone_number: str
     bed_capacity: int
     doctor_count: int
 
 
 class FacilityUpdate(BaseModel):
-    facility_name: Optional[str]
-    facility_type: Optional[str]
-    address: Optional[Address]
+    name: Optional[str]
+    type: Optional[str]
+    city: Optional[str]
+    street: Optional[str]
+    province: Optional[str]
+    longitude: Optional[float]
+    latitude: Optional[float]
     phone_number: Optional[str]
     bed_capacity: Optional[int]
     doctor_count: Optional[int]

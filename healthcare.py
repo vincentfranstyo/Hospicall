@@ -3,115 +3,98 @@ from fastapi import APIRouter
 from db.supabase_manager import create_supabase_client
 from models import HealthFacility, FacilityUpdate
 
-router = APIRouter()
 supabase_client = create_supabase_client()
 
 
 def get_facilities():
-    facs = supabase_client.from_("healthcares").select("*").execute()
-    return facs
+    try:
+        response = supabase_client.table("healthcares").select("*").execute()
+        facs = response.data
+        return facs
+    except Exception as e:
+        print(f"Error retrieving facilities: {str(e)}")
+        return {"message": "no data retrieved"}
 
 
 def get_facility_ids():
     facs = get_facilities()
-    return [facility["facility_id"] for facility in facs]
+    facs_ids = [int(facility.get('id')) for facility in facs]
+    facs_ids.sort()
+    return [str(ids) for ids in facs_ids]
 
 
-def save_to_db(healthcares):
-    try:
-        facs = supabase_client.from_("healthcares").insert(healthcares).execute()
-        return facs
-    except Exception as e:
-        print("Error inserting")
-        return "Error inserting"
-
-
+router = APIRouter()
 facilities = get_facilities()
 
 
 @router.get("/")
 async def get_health_facilities():
-    fac_name_list = []
-    for facility in facilities:
-        fac_name_list.append(facility['facility_name'])
-    return fac_name_list
+    return get_facilities()
 
 
 @router.get("/{facility_id}")
 async def get_health_facility_by_id(facility_id: str):
-    facility_ids = get_facility_ids()
-    if facility_id not in facility_ids:
-        return {"message": "The facility you are looking for is not available"}
-    for facility in facilities:
-        if facility['facility_id'] == facility_id:
-            return facility
-    return None
+    facs = supabase_client.table('healthcares').select("*").eq("id", facility_id).execute()
+    return facs.data
 
 
 @router.post("/{facility_id}")
 async def create_health_facility(facility_id: str, add_facility: HealthFacility):
+    facility_ids = get_facility_ids()
+    if facility_id in facility_ids:
+        return {"message": "The facility with ID: " + facility_id + " is already there"}
+
+    fac_added = add_facility.dict()
     try:
-        add_facility.dict()['facility_id'] = facility_id
-        facility_ids = get_facility_ids()
-        if facility_id in facility_ids:
-            return {"message": "The facility with ID: " + facility_id + " is already there"}
+        facs = supabase_client.table('healthcares').insert(fac_added).execute()
+        return [{"facilities": facs}, {"message": "Facility added successfully"}] if facs else [{"message": "failed to add facility"}]
 
-        for facility in facilities:
-            if add_facility.coordinates.longitude == facility['coordinates']['longitude'] and add_facility.coordinates.latitude == facility['coordinates']['latitude']:
-                return {"message": "The facility at that coordinate already exists"}
-
-        add_facility.facility_id = facility_id
-        facilities.append(add_facility.dict())
-        facs = save_to_db(facilities)
-        return [{"facilities": facs}, {"message": "Facility added successfully"}] if facs else [
-            {"message": "failed to add facility"}]
     except Exception as e:
-        print("Error", e)
-        return [{"message": "Error adding facility"}]
+        print("Error", str(e))
+        return [{"message": str(e)}]
 
 
 @router.put("/{facility_id}")
 async def update_health_facility(facility_id: str, update_fac: FacilityUpdate):
+    facility_ids = get_facility_ids()
+    if facility_id not in facility_ids:
+        return {"The facility you are looking for is not available"}
+
     try:
-        facility_ids = get_facility_ids()
-        if facility_id not in facility_ids:
-            return {"The facility you are looking for is not available"}
+        old_data = supabase_client.table("healthcares").select("*").eq("id", facility_id).execute()
 
-        for facility in facilities:
-            if facility['facility_id'] == facility_id:
-                update_data = {key: value for key, value in update_fac.dict().items() if value}
-                facility.update(update_data)
+        if old_data:
+            new_data = old_data.data[0]
+            updated_data = {key: value for key, value in update_fac.dict().items() if value}
 
-        facs = save_to_db(facilities)
-        return [{"facilities": facs}, {"message": "Facility updated successfully"}] if facs else [
-            {"message": "failed to update facility"}]
+            for key, value in updated_data.items():
+                new_data[key] = value
+
+            fac = supabase_client.table("healthcares").update([new_data]).eq("id", facility_id).execute()
+
+            if fac:
+                return [{"call updated": fac.data[0]}, {"message": "Call log updated successfully"}]
+            else:
+                return [{"message": "Facility update failed"}]
+        else:
+            return [{"message": "The facility you are referring to is not available"}]
+
     except Exception as e:
-        print("Error: ", e)
-        return [{"message": "failed to update facility"}]
+        print("Exception", e)
+        return [{"Exception": str(e)}]
 
 
 @router.delete('/{facility_id}')
 async def delete_health_facility(facility_id: str):
-    healthcares = get_facilities()
-    facility_ids = get_facility_ids()
-    if facility_id not in facility_ids:
+    fac_ids = get_facility_ids()
+    if facility_id not in fac_ids:
         return {"message": "The facility you are looking for is not available"}
-
-    facilities_to_delete = []
-    for facility in healthcares:
-        if facility['facility_id'] == facility_id:
-            facilities_to_delete.append(facility)
-    if not facilities_to_delete:
-        return {"message": "The facility you are looking for is not available"}
-
-    fac_name = facilities_to_delete[0]['facility_name']
-    healthcares = [facility for facility in healthcares if facility not in facilities_to_delete]
     try:
-        facs = save_to_db(healthcares)
-        return [{"facilities": healthcares},
-                {"Message": "Healthcare " + fac_name + " deleted successfully"}] if facs else [
-            {"message": "Failed to delete " + fac_name}]
+        fac = supabase_client.table("healthcares").delete().eq("id", facility_id).execute()
+
+        return [{"message": "Facility with ID " + facility_id + " deleted successfully"}] if fac else [
+            {"message": "Facility delete failed"}]
 
     except Exception as e:
-        print("Error: ", e)
-        return [{"message": "Failed to delete " + fac_name}]
+        print("Exception", e)
+        return {"message": str(e)}

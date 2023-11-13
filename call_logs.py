@@ -1,5 +1,3 @@
-import json
-
 from fastapi import APIRouter
 
 from db.supabase_manager import create_supabase_client
@@ -11,7 +9,7 @@ supabase_client = create_supabase_client()
 def get_call_ids():
     calls = get_calls()
     call_ids = [int(call.get('id')) for call in calls]
-    call_ids.sort()  # Sort the list in ascending order
+    call_ids.sort()
     return call_ids
 
 
@@ -25,13 +23,6 @@ def get_calls():
         return {"message": "no data retrieved"}
 
 
-def write_to_db(calls):
-    json_call = json.dumps(calls)
-    supabase_client.table("call_logs").insert(json_call).execute()
-    return json_call
-
-
-# TODO: ini IDnya masi belum auto increment, cuman 1 kali doang. Nextnya ngga increment
 router = APIRouter()
 call_logs = get_calls()
 
@@ -78,7 +69,6 @@ async def update_call_log(call_id: str, update_call: UpdateCall):
     if call_id not in call_ids:
         return {"message": "The call you are referring to is not available"}
 
-    # TODO: Fix this shit
     try:
         old_data = supabase_client.table("call_logs").select("*").eq("id", call_id).execute()
 
@@ -105,15 +95,13 @@ async def update_call_log(call_id: str, update_call: UpdateCall):
 
 @router.delete('/{call_id}')
 async def delete_call_log(call_id: str):
+    call_ids = [str(call_id) for call_id in get_call_ids()]
+    if call_id not in call_ids:
+        return {"message": "The call log you are looking for is not available"}
     try:
-        call_ids = [str(call_id) for call_id in get_call_ids()]
-        if call_id not in call_ids:
-            return {"message": "The call log you are looking for is not available"}
-
         call = supabase_client.table("call_logs").delete().eq("id", call_id).execute()
 
-        return [{"message": "Call log with ID " + call_id + " deleted successfully"}] if call else [
-            {"message": "Call log delete failed"}]
+        return [{"message": "Call log with ID " + call_id + " deleted successfully"}] if call else [{"message": "Call log delete failed"}]
 
     except Exception as e:
         print("Exception", e)
