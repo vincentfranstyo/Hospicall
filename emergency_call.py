@@ -1,14 +1,15 @@
-from math import cos, asin, sqrt, pi
-import sys
 import json
+import sys
+from math import cos, asin, sqrt, pi
 
-from healthcare import Coordinate
-from call_logs import create_call_log, update_call_log, UpdateCall
 from fastapi import APIRouter
+
+from call_logs import create_call_log, update_call_log
+from models import Coordinate, UpdateCall
 
 router = APIRouter()
 
-healthcare_json = "Data/health_facilities.json"
+healthcare_json = "db/health_facilities.json"
 with open(healthcare_json, "r") as read_file:
     facilities = json.load(read_file)
 
@@ -26,6 +27,7 @@ def distance_by_long_and_lat(coor1: Coordinate, coor2: Coordinate):
     return d
 
 
+# TODO: mengurutkan fasilitas kesehatan dan dimasukkan ke array
 @router.get("/")
 async def get_healthcare_number(longitude: float, latitude: float):
     closest_facilities = {}
@@ -44,6 +46,7 @@ async def get_healthcare_number(longitude: float, latitude: float):
     return {"closest_facilities": closest_facilities}
 
 
+# TODO: Notifikasi
 @router.post('/')
 async def make_call(longitude: float, latitude: float):
     closest_facilities = await get_healthcare_number(longitude, latitude)
@@ -60,4 +63,3 @@ async def make_call(longitude: float, latitude: float):
         await update_call_log(call_id, updated_call)
 
     return {"message": f"Your call to {closest_facility['facility_name']} has been made"}
-
