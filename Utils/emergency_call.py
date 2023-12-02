@@ -2,11 +2,14 @@ from math import cos, asin, sqrt, pi
 import sys
 import json
 
-from Models.models import UpdateCall, Coordinate
-from Utils.call_logs import create_call_log, update_call_log
+from Models.models import Coordinate, CallLog
 from fastapi import APIRouter
 
 router = APIRouter()
+
+call_logs_json = 'Data/call_logs.json'
+with open(call_logs_json, "r") as read_file:
+    call_logs = json.load(read_file)
 
 healthcare_json = "Data/health_facilities.json"
 with open(healthcare_json, "r") as read_file:
@@ -48,16 +51,15 @@ async def get_healthcare_number(longitude: float, latitude: float):
 async def make_call(longitude: float, latitude: float):
     closest_facilities = await get_healthcare_number(longitude, latitude)
     closest_facility = closest_facilities['closest_facilities']
+    callee_number = closest_facility['phone_number']
 
     if closest_facility:
-        call_made = await create_call_log()
-        call_data = call_made[0]["call_made"]
-        call_id = call_data['call_id']
+        add_call = CallLog(callee_number=callee_number)
+        call_added = add_call.dict()
 
-        callee_number = closest_facility['phone_number']
+        call_logs.append(call_added)
 
-        updated_call = UpdateCall(callee_number=callee_number)
-        await update_call_log(call_id, updated_call)
+        with open(call_logs_json, "w") as call_file:
+            json.dump(call_logs, call_file, indent=4)
 
     return {"message": f"Your call to {closest_facility['facility_name']} has been made"}
-
