@@ -2,19 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 import json
 
-from Models.models import CallLog, get_call_ids, UpdateCall
+from Models.models import CallLog, UpdateCall
 from Models.user import UserJSON
 from Utils.auth import get_current_user
 
 call_logs_json = 'Data/call_logs.json'
-
-router = APIRouter()
+calls = APIRouter(tags=["calls"])
 
 with open(call_logs_json, "r") as read_file:
     call_logs = json.load(read_file)
 
 
-@router.get('/')
+def get_call_ids():
+    return [call['call_id'] for call in call_logs]
+
+
+@calls.get('/')
 async def get_call_logs(user: UserJSON = Depends(get_current_user)):
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please do register")
@@ -25,7 +28,7 @@ async def get_call_logs(user: UserJSON = Depends(get_current_user)):
     return calls
 
 
-@router.get('/{call_id}')
+@calls.get('/{call_id}')
 async def get_call_log_by_id(call_id: str, user: UserJSON = Depends(get_current_user)):
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please do register")
@@ -34,7 +37,7 @@ async def get_call_log_by_id(call_id: str, user: UserJSON = Depends(get_current_
             return call
 
 
-@router.post('/new_log')
+@calls.post('/new_log')
 async def create_call_log(user: UserJSON = Depends(get_current_user)):
     if not user.admin_status:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
@@ -49,7 +52,7 @@ async def create_call_log(user: UserJSON = Depends(get_current_user)):
     return [{"call_made": call_added}, {"message": "The call logs added successfully"}]
 
 
-@router.put("/update_log")
+@calls.put("/update_log")
 async def update_call_log(call_id: str, update_call: UpdateCall, user: UserJSON = Depends(get_current_user)):
     if not user.admin_status:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
@@ -69,7 +72,7 @@ async def update_call_log(call_id: str, update_call: UpdateCall, user: UserJSON 
     return {"message": "Call log updated successfully"}
 
 
-@router.delete('/delete_log')
+@calls.delete('/delete_log')
 async def delete_call_log(call_id: str, user: UserJSON = Depends(get_current_user)):
     if not user.admin_status:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
@@ -89,6 +92,6 @@ async def delete_call_log(call_id: str, user: UserJSON = Depends(get_current_use
     call_logs = [call for call in call_logs if call not in call_to_delete]
 
     with open(call_logs_json, 'w') as call_file:
-        json.dump(call_logs, call_file)
+        json.dump(call_logs, call_file, indent=4)
 
     return {"Message": "Call log deleted successfully"}

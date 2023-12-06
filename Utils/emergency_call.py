@@ -3,9 +3,13 @@ import sys
 import json
 
 from Models.models import Coordinate, CallLog
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
 
-router = APIRouter()
+from Models.user import UserJSON
+from Utils.auth import get_current_user
+
+emergencies = APIRouter(tags=['emergencies'])
 
 call_logs_json = 'Data/call_logs.json'
 with open(call_logs_json, "r") as read_file:
@@ -29,7 +33,7 @@ def distance_by_long_and_lat(coor1: Coordinate, coor2: Coordinate):
     return d
 
 
-@router.get("/")
+@emergencies.get("/")
 async def get_healthcare_number(longitude: float, latitude: float):
     closest_facilities = {}
     current_coor = Coordinate(longitude=longitude, latitude=latitude)
@@ -47,14 +51,16 @@ async def get_healthcare_number(longitude: float, latitude: float):
     return {"closest_facilities": closest_facilities}
 
 
-@router.post('/')
-async def make_call(longitude: float, latitude: float):
+@emergencies.post('/')
+async def make_call(longitude: float, latitude: float, user: Optional[UserJSON] = Depends(get_current_user)):
     closest_facilities = await get_healthcare_number(longitude, latitude)
     closest_facility = closest_facilities['closest_facilities']
     callee_number = closest_facility['phone_number']
+    caller_number = user.phone_number if user else "unknown"
 
+    made_call = {}
     if closest_facility:
-        add_call = CallLog(callee_number=callee_number)
+        add_call = CallLog(callee_number=callee_number, caller_number=caller_number)
         call_added = add_call.dict()
 
         call_logs.append(call_added)
@@ -62,4 +68,6 @@ async def make_call(longitude: float, latitude: float):
         with open(call_logs_json, "w") as call_file:
             json.dump(call_logs, call_file, indent=4)
 
-    return {"message": f"Your call to {closest_facility['facility_name']} has been made"}
+        made_call = call_added
+
+    return [{"message": f"Your call to {closest_facility['facility_name']} has been made"}, {"call_made": made_call}]

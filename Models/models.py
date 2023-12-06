@@ -1,27 +1,37 @@
 import json
-
-from pydantic import BaseModel, validator
-from typing import Optional, Any
-from datetime import datetime
+import random
 import randomtimestamp
+from datetime import datetime
+from typing import Optional, List
 
+from pydantic import BaseModel, validator, Field
+
+from Utils.api_psychos import get_psychologist_list
 
 call_logs_json = 'Data/call_logs.json'
+health_facilities_json = 'Data/health_facilities.json'
 
-with open(call_logs_json, "r") as read_file:
-    call_logs = json.load(read_file)
+with open(call_logs_json, "r") as read_call_file:
+    call_logs = json.load(read_call_file)
+
+with open(health_facilities_json, "r") as read_hf_file:
+    health_facilities = json.load(read_hf_file)
 
 
-def get_call_ids():
-    with open(call_logs_json, "r") as call_file:
-        call_in_logs = json.load(call_file)
-    return [call['call_id'] for call in call_in_logs]
+def get_random_psychos(num_of_psychos: int):
+    psycho_list_this_fac = []
+    psycho_list = get_psychologist_list()
+
+    for i in range(num_of_psychos):
+        psycho_list_this_fac.append(random.randint(1, len(psycho_list)))
+    return psycho_list_this_fac
 
 
 class CallLog(BaseModel):
-    call_id: str = str(int(get_call_ids()[-1]) + 1)
+    call_id: str = Field(default_factory=lambda: str(len(health_facilities)))
     call_date: str = datetime.now().strftime("%Y-%m-%d")
     call_time: str = datetime.now().strftime("%H:%M:%S")
+    caller_number: str = "unknown"
     callee_number: str = "+6287890765"
     call_duration: str = randomtimestamp.randomtimestamp().strftime("%H:%M:%S")
     call_status: str = "completed"
@@ -59,7 +69,7 @@ class Address(BaseModel):
 
 
 class HealthFacility(BaseModel):
-    facility_id: str = None
+    facility_id: str = Field(default_factory=lambda: str(len(health_facilities)))
     facility_name: str
     facility_type: str
     address: Address
@@ -67,6 +77,8 @@ class HealthFacility(BaseModel):
     phone_number: str
     bed_capacity: int
     doctor_count: int
+    psychologist_count: int = random.randint(1, 6)
+    psychologist_list: List[int] = get_random_psychos(psychologist_count)
 
 
 class FacilityUpdate(BaseModel):
@@ -76,3 +88,5 @@ class FacilityUpdate(BaseModel):
     phone_number: Optional[str]
     bed_capacity: Optional[int]
     doctor_count: Optional[int]
+    psychologist_count: Optional[int]
+    psychologist_list: Optional[List[int]]
