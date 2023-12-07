@@ -28,5 +28,15 @@
         "hashed_password": "$2b$12$QQjMH9pwv4H.qKlCBLbRTOXsDHRF/cChhG99dfLDruEG0Ei85/nDO",
         "phone_number": "string",
         "admin_status": false
+    },
+    {
+        "id": "4",
+        "first_name": "vinvan",
+        "last_name": "vanvan",
+        "email": "vinvin@gmail.com",
+        "username": "vinvinvan",
+        "hashed_password": "$2b$12$txPtukuShiBgbaYKmEsWuumCh5PrpU5Z4HactqTHYh9kb.KMV4QAG",
+        "phone_number": "none",
+        "admin_status": false
     }
 ]
