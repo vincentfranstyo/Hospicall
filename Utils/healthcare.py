@@ -5,12 +5,13 @@ from Models.user import UserJSON
 from Models.models import HealthFacility, FacilityUpdate
 from Utils.auth import get_current_user
 from Utils.users import not_user, not_admin
+from Utils.read_file import read_hf_file
+from Utils.write_file import write_hf_file
 
-json_filename = "Data/health_facilities.json"
+hf_json = "Data/health_facilities.json"
 healthcares = APIRouter(tags=["Healthcares"])
 
-with open(json_filename, "r") as read_file:
-    facilities = json.load(read_file)
+facilities = read_hf_file(hf_json)
 
 
 def get_facility_ids():
@@ -47,8 +48,7 @@ async def create_health_facility(add_facility: HealthFacility, user: UserJSON = 
             return {"message": "The facility at that coordinate already exists"}
 
     facilities.append(add_facility.dict())
-    with open(json_filename, "w") as write_file:
-        json.dump(facilities, write_file, indent=4)
+    write_hf_file(hf_json, facilities)
 
     return [{"message": "Facility added successfully"},{"facility_made": add_facility}]
 
@@ -65,8 +65,7 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate, u
             update_data = {key: value for key, value in update_fac.dict().items() if value}
             facility.update(update_data)
 
-    with open(json_filename, 'w') as update_file:
-        json.dump(facilities, update_file, indent=4)
+    write_hf_file(hf_json, facilities)
 
     return {"message": "Facilities updated successfully"}
 
@@ -89,7 +88,6 @@ async def delete_health_facility(facility_id: str, user: UserJSON = Depends(get_
     fac_name = facilities_to_delete[0]['facility_name']
     facilities = [facility for facility in facilities if facility not in facilities_to_delete]
 
-    with open(json_filename, 'w') as delete_file:
-        json.dump(facilities, delete_file, indent=4)
+    write_hf_file(hf_json, facilities)
 
     return {"Message": "Healthcare " + fac_name + " deleted successfully"}

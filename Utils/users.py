@@ -3,13 +3,15 @@ import json
 from Models.user import UserJSON, UserUpdate, UserIn
 
 from Utils.auth import get_current_user, register
+from Utils.read_file import read_user_file
+from Utils.write_file import write_user_file
 
 user = APIRouter(tags=['User'])
 
-json_filename = "Data/users.json"
+user_json = "Data/users.json"
 
-with open(json_filename, "r") as read_file:
-    users = json.load(read_file)
+
+users = read_user_file(user_json)
 
 
 def get_users_id():
@@ -65,8 +67,7 @@ async def update_user(user_id: str, update_user: UserUpdate, user: UserJSON = De
             update_data = {key: value for key, value in update_user.dict().items() if value}
             user.update(update_data)
 
-    with open(json_filename, 'w') as update_file:
-        json.dump(users, update_file, indent=4)
+    write_user_file(user_json, users)
 
     return {"message": "users updated successfully"}
 
@@ -89,7 +90,6 @@ async def delete_user(user_id: str, user: UserJSON = Depends(get_current_user)):
     username = user_to_delete[0]['username']
     users = [user for user in users if user not in user_to_delete]
 
-    with open(json_filename, 'w') as delete_file:
-        json.dump(users, delete_file, indent=4)
+    write_user_file(user_json, users)
 
     return {"Message": "User with username " + username + " is deleted successfully"}

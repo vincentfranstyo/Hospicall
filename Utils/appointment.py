@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 import json
 from Models.user import UserJSON
 
-from Models.models import HealthFacility, FacilityUpdate, Appointment
+from Models.models import HealthFacility, FacilityUpdate, Appointment, AppointmentUpdate
 from Utils.auth import get_current_user
 from Utils.users import not_user, not_admin
+from Utils.read_file import read_appointment_file
+from Utils.write_file import write_app_file
 
-json_filename = "Data/appointment.json"
+app_json = "Data/appointment.json"
 appointment = APIRouter(tags=["Appointments"])
 
-with open(json_filename, "r") as read_file:
-    appointments = json.load(read_file)
+appointments = read_appointment_file(app_json)
 
 
 def get_appointment_ids():
@@ -24,7 +25,7 @@ async def get_appointments(user: UserJSON = Depends(get_current_user)):
 
 
 @appointment.get("/{appointment_id}")
-async def get_appointment_id(appointment_id: str, user: UserJSON = Depends(get_current_user)):
+async def get_appointment_by_id(appointment_id: str, user: UserJSON = Depends(get_current_user)):
     not_user(user)
     appointment_ids = get_appointment_ids()
     if appointment_id not in appointment_ids:
@@ -40,15 +41,15 @@ async def get_appointment_id(appointment_id: str, user: UserJSON = Depends(get_c
 async def create_appointment(add_appointment: Appointment, user: UserJSON = Depends(get_current_user)):
     not_user(user)
 
+    add_appointment.user_id = user.id
     appointments.append(add_appointment.dict())
-    with open(json_filename, "w") as write_file:
-        json.dump(appointments, write_file, indent=4)
+    write_app_file(app_json, appointments)
 
     return [{"message": "Appointment added successfully"}, {"Appointment": add_appointment}]
 
 
 @appointment.put("/update_appointment")
-async def update_health_appointment(appointment_id: str, update_app: FacilityUpdate, user: UserJSON = Depends(get_current_user)):
+async def update_health_appointment(appointment_id: str, update_app: AppointmentUpdate, user: UserJSON = Depends(get_current_user)):
     global appointment
     not_user(user)
     appointment_ids = get_appointment_ids()
@@ -60,8 +61,7 @@ async def update_health_appointment(appointment_id: str, update_app: FacilityUpd
             update_data = {key: value for key, value in update_app.dict().items() if value}
             appointment.update(update_data)
 
-    with open(json_filename, 'w') as update_file:
-        json.dump(appointments, update_file, indent=4)
+    write_app_file(app_json, appointments)
 
     return [{"message": "Appointment updated successfully"},{"Appointment": appointment}]
 
@@ -86,7 +86,6 @@ async def delete_health_appointment(appointment_id: str, user: UserJSON = Depend
     appointment_healthcare_name = appointments_to_delete[0]['health_facility_name']
     appointments = [appointment for appointment in appointments if appointment not in appointments_to_delete]
 
-    with open(json_filename, 'w') as delete_file:
-        json.dump(appointments, delete_file, indent=4)
+    write_app_file(app_json, appointments)
 
     return {"Message": "Appointment for " + appointment_username + "with  " + appointment_psychologist_name + " at " + appointment_healthcare_name + " deleted successfully"}

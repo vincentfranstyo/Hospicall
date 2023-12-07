@@ -7,28 +7,22 @@ from typing import Optional, List
 from pydantic import BaseModel, validator, Field
 
 from Utils.api_psychos import get_psychologist_list
+from Utils.read_file import read_hf_file, read_user_file, read_call_file, read_appointment_file
 
 call_logs_json = 'Data/call_logs.json'
 health_facilities_json = 'Data/health_facilities.json'
 appointment_json = 'Data/appointment.json'
 users_json = 'Data/users.json'
 
-with open(users_json, "r") as read_user_file:
-    users = json.load(read_user_file)
-
-with open(call_logs_json, "r") as read_call_file:
-    call_logs = json.load(read_call_file)
-
-with open(health_facilities_json, "r") as read_hf_file:
-    health_facilities = json.load(read_hf_file)
-
-with open(appointment_json, "r") as read_ap_file:
-    appointments = json.load(read_ap_file)
 
 psychos = get_psychologist_list()
+health_facilities = read_hf_file(health_facilities_json)
+users = read_user_file(users_json)
+call_logs = read_call_file(call_logs_json)
+appointments = read_appointment_file(appointment_json)
 
 
-def get_user(user_id: str):
+async def get_user_data(user_id: str):
     for user in users:
         if user.id == user_id:
             return user
@@ -36,7 +30,7 @@ def get_user(user_id: str):
     return None
 
 
-def get_hf(hf_id: str):
+async def get_hf(hf_id: str):
     for hf in health_facilities:
         if hf.id == hf_id:
             return hf
@@ -66,7 +60,7 @@ def get_random_psychos(num_of_psychos: int):
 
 
 class CallLog(BaseModel):
-    call_id: str = Field(default_factory=lambda: str(len(health_facilities) + 1))
+    call_id: str = str(len(call_logs) + 1)
     call_date: str = datetime.now().strftime("%Y-%m-%d")
     call_time: str = datetime.now().strftime("%H:%M:%S")
     caller_number: str = "unknown"
@@ -139,7 +133,6 @@ class Appointment(BaseModel):
 
 
 class AppointmentUpdate(BaseModel):
-    user_id: Optional[str]
     pyschologist_id: Optional[str]
     health_facility_id: Optional[str]
     attended_status: Optional[str]

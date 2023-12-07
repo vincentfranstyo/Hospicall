@@ -5,5 +5,12 @@
         "psychologist_id": "1",
         "health_facility_id": "1",
         "attended_status": "false"
+    },
+    {
+        "appointment_id": "2",
+        "user_id": "1",
+        "psychologist_id": "2",
+        "health_facility_id": "2",
+        "attended_status": "false"
     }
 ]

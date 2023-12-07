@@ -18,6 +18,15 @@
         "call_status": "completed"
     },
     {
+        "call_id": "3",
+        "call_date": "2023-11-07",
+        "call_time": "09:15:30",
+        "callee_number": "777-8888",
+        "caller_number": "unknown",
+        "call_duration": "00:08:45",
+        "call_status": "completed"
+    },
+    {
         "call_id": "4",
         "call_date": "2023-11-07",
         "call_time": "00:01:18",
@@ -78,42 +87,6 @@
         "callee_number": "+6287890765",
         "caller_number": "unknown",
         "call_duration": "11:32:09",
-        "call_status": "completed"
-    },
-    {
-        "call_id": "11",
-        "call_date": "2023-12-02",
-        "call_time": "23:50:32",
-        "callee_number": "+6285365347656",
-        "caller_number": "unknown",
-        "call_duration": "19:38:11",
-        "call_status": "completed"
-    },
-    {
-        "call_id": "12",
-        "call_date": "2023-12-03",
-        "call_time": "00:10:58",
-        "callee_number": "+6285365347656",
-        "caller_number": "unknown",
-        "call_duration": "22:23:44",
-        "call_status": "completed"
-    },
-    {
-        "call_id": "13",
-        "call_date": "2023-12-05",
-        "call_time": "16:07:45",
-        "callee_number": "+6285365347656",
-        "caller_number": "unknown",
-        "call_duration": "09:42:35",
-        "call_status": "completed"
-    },
-    {
-        "call_id": "3",
-        "call_date": "2023-12-07",
-        "call_time": "02:46:32",
-        "caller_number": "unknown",
-        "callee_number": "+6287890765",
-        "call_duration": "09:52:06",
         "call_status": "completed"
     }
 ]

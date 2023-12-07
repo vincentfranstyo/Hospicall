@@ -7,16 +7,18 @@ from Utils.api_psychos import get_psychologist_list
 from Models.models import Coordinate, Appointment
 from Models.user import UserJSON
 from Utils.auth import get_current_user
+from Utils.call_logs import create_call_log
 from Utils.emergency_call import distance_by_long_and_lat
+from Utils.healthcare import get_health_facility_by_id
 from Utils.users import not_user, not_admin
-from Utils.appointment import create_appointment
+from Utils.appointment import create_appointment, get_appointment_by_id
+from Utils.read_file import read_hf_file
 
 appointment_calls = APIRouter(tags=['Appointment Calls'])
 url = 'https://ca-sereneapp.braveisland-f409e30d.southeastasia.azurecontainerapps.io/'
 
 healthcare_json = "Data/health_facilities.json"
-with open(healthcare_json, "r") as read_file:
-    facilities = json.load(read_file)
+facilities = read_hf_file(healthcare_json)
 
 
 @appointment_calls.get('/closest_fac')
@@ -65,6 +67,19 @@ async def make_appointment(add_appointment: Appointment, user: UserJSON = Depend
 
 
 @appointment_calls.post('/make_appointment_call')
-async def make_appointment_call():
+async def make_appointment_call(appointment_id: str, user: UserJSON = Depends(get_current_user)):
+    not_user(user)
 
-    return
+    caller_number = user.dict()['phone_number']
+
+    appointment = await get_appointment_by_id(appointment_id)
+    hf_id = appointment['health_facility_id']
+
+    hf = await get_health_facility_by_id(hf_id)
+    callee_number = hf['phone_number']
+
+    made_call = []
+    if callee_number and caller_number:
+        made_call = await create_call_log(callee_number=callee_number, caller_number=caller_number, user=user)
+
+    return made_call

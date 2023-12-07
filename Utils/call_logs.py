@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 import json
@@ -6,12 +8,13 @@ from Models.models import CallLog, UpdateCall
 from Models.user import UserJSON
 from Utils.auth import get_current_user
 from Utils.users import not_user, not_admin
+from Utils.read_file import read_call_file
+from Utils.write_file import write_call_file
 
 call_logs_json = 'Data/call_logs.json'
 calls = APIRouter(tags=["Calls"])
 
-with open(call_logs_json, "r") as read_file:
-    call_logs = json.load(read_file)
+call_logs = read_call_file(call_logs_json)
 
 
 def get_call_ids():
@@ -37,15 +40,18 @@ async def get_call_log_by_id(call_id: str, user: UserJSON = Depends(get_current_
 
 
 @calls.post('/new_log')
-async def create_call_log(user: UserJSON = Depends(get_current_user)):
+async def create_call_log(callee_number: Optional[str] = None, caller_number: Optional[str] = None, user: UserJSON = Depends(get_current_user)):
     not_user(user)
-    add_call = CallLog()
+    if callee_number and caller_number:
+        add_call = CallLog(callee_number=callee_number, caller_number=caller_number)
+    else:
+        add_call = CallLog()
+
     call_added = add_call.dict()
 
     call_logs.append(call_added)
 
-    with open(call_logs_json, "w") as call_file:
-        json.dump(call_logs, call_file, indent=4)
+    write_call_file(call_logs_json, call_logs)
 
     return [{"call_made": call_added}, {"message": "The call logs added successfully"}]
 
@@ -63,8 +69,7 @@ async def update_call_log(call_id: str, update_call: UpdateCall, user: UserJSON 
             call.update(update_data)
             call_logs[i] = call
 
-    with open(call_logs_json, "w") as call_log_file:
-        json.dump(call_logs, call_log_file, indent=4)
+    write_call_file(call_logs_json, call_logs)
 
     return {"message": "Call log updated successfully"}
 
@@ -87,7 +92,6 @@ async def delete_call_log(call_id: str, user: UserJSON = Depends(get_current_use
 
     call_logs = [call for call in call_logs if call not in call_to_delete]
 
-    with open(call_logs_json, 'w') as call_file:
-        json.dump(call_logs, call_file, indent=4)
+    write_call_file(call_logs_json, call_logs)
 
     return {"Message": "Call log deleted successfully"}
