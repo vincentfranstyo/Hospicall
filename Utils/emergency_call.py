@@ -1,15 +1,15 @@
-from math import cos, asin, sqrt, pi
-import sys
 import json
-
-from Models.models import Coordinate, CallLog
-from fastapi import APIRouter, Depends, HTTPException, status
+import sys
+from math import cos, asin, sqrt, pi
 from typing import Optional
 
+from fastapi import APIRouter, Depends
+
+from Models.models import Coordinate, CallLog
 from Models.user import UserJSON
 from Utils.auth import get_current_user
 
-emergencies = APIRouter(tags=['emergencies'])
+emergencies = APIRouter(tags=['Emergencies'])
 
 call_logs_json = 'Data/call_logs.json'
 with open(call_logs_json, "r") as read_file:
@@ -40,8 +40,7 @@ async def get_healthcare_number(longitude: float, latitude: float):
     curr_dis = sys.maxsize
 
     for facility in facilities:
-        facility_coor = Coordinate(longitude=facility['coordinates']['longitude'],
-                                   latitude=facility['coordinates']['latitude'])
+        facility_coor = Coordinate(longitude=facility['coordinates']['longitude'], latitude=facility['coordinates']['latitude'])
         dis = distance_by_long_and_lat(facility_coor, current_coor)
 
         if dis < curr_dis:

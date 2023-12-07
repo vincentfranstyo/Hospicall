@@ -1,0 +1,9 @@
+[
+    {
+        "appointment_id": "1",
+        "user_id": "2",
+        "psychologist_id": "1",
+        "health_facility_id": "1",
+        "attended_status": "false"
+    }
+]

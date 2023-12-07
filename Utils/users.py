@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 import json
-from Models.user import UserJSON, UserUpdate
+from Models.user import UserJSON, UserUpdate, UserIn
 
-from Utils.auth import get_current_user
+from Utils.auth import get_current_user, register
 
-user = APIRouter(tags=['user'])
+user = APIRouter(tags=['User'])
 
 json_filename = "Data/users.json"
 
@@ -46,8 +46,15 @@ async def get_user_by_id(user_id: str, user: UserJSON = Depends(get_current_user
     return None
 
 
-@user.put("/user")
-async def update_health_facility(user_id: str, update_user: UserUpdate, user: UserJSON = Depends(get_current_user)):
+@user.post('/add_user')
+async def add_user(new_user: UserIn, user: UserJSON = Depends(get_current_user)):
+    not_admin(user)
+    made_user = await register(new_user)
+    return made_user
+
+
+@user.put("/edit_user")
+async def update_user(user_id: str, update_user: UserUpdate, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
     users_id = get_users_id()
     if user_id not in users_id:
@@ -65,7 +72,7 @@ async def update_health_facility(user_id: str, update_user: UserUpdate, user: Us
 
 
 @user.delete('/delete_user')
-async def delete_health_facility(user_id: str, user: UserJSON = Depends(get_current_user)):
+async def delete_user(user_id: str, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
     global users
     users_id = get_users_id()
@@ -85,4 +92,4 @@ async def delete_health_facility(user_id: str, user: UserJSON = Depends(get_curr
     with open(json_filename, 'w') as delete_file:
         json.dump(users, delete_file, indent=4)
 
-    return {"Message": "User with " + username + " is deleted successfully"}
+    return {"Message": "User with username " + username + " is deleted successfully"}

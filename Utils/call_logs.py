@@ -5,9 +5,10 @@ import json
 from Models.models import CallLog, UpdateCall
 from Models.user import UserJSON
 from Utils.auth import get_current_user
+from Utils.users import not_user, not_admin
 
 call_logs_json = 'Data/call_logs.json'
-calls = APIRouter(tags=["calls"])
+calls = APIRouter(tags=["Calls"])
 
 with open(call_logs_json, "r") as read_file:
     call_logs = json.load(read_file)
@@ -19,8 +20,7 @@ def get_call_ids():
 
 @calls.get('/')
 async def get_call_logs(user: UserJSON = Depends(get_current_user)):
-    if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please do register")
+    not_user(user)
     calls = []
     for call in call_logs:
         calls.append(call)
@@ -30,8 +30,7 @@ async def get_call_logs(user: UserJSON = Depends(get_current_user)):
 
 @calls.get('/{call_id}')
 async def get_call_log_by_id(call_id: str, user: UserJSON = Depends(get_current_user)):
-    if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please do register")
+    not_user(user)
     for call in call_logs:
         if call['call_id'] == call_id:
             return call
@@ -39,8 +38,7 @@ async def get_call_log_by_id(call_id: str, user: UserJSON = Depends(get_current_
 
 @calls.post('/new_log')
 async def create_call_log(user: UserJSON = Depends(get_current_user)):
-    if not user.admin_status:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
+    not_user(user)
     add_call = CallLog()
     call_added = add_call.dict()
 
@@ -54,8 +52,7 @@ async def create_call_log(user: UserJSON = Depends(get_current_user)):
 
 @calls.put("/update_log")
 async def update_call_log(call_id: str, update_call: UpdateCall, user: UserJSON = Depends(get_current_user)):
-    if not user.admin_status:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
+    not_admin(user)
     call_ids = get_call_ids()
     if call_id not in call_ids:
         return {"message": "The call you are referring to is not available"}
@@ -74,8 +71,7 @@ async def update_call_log(call_id: str, update_call: UpdateCall, user: UserJSON 
 
 @calls.delete('/delete_log')
 async def delete_call_log(call_id: str, user: UserJSON = Depends(get_current_user)):
-    if not user.admin_status:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
+    not_admin(user)
     global call_logs
     call_ids = get_call_ids()
     if call_id not in call_ids:

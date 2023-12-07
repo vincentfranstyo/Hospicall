@@ -4,9 +4,10 @@ from Models.user import UserJSON
 
 from Models.models import HealthFacility, FacilityUpdate
 from Utils.auth import get_current_user
+from Utils.users import not_user, not_admin
 
 json_filename = "Data/health_facilities.json"
-healthcares = APIRouter(tags=["healthcares"])
+healthcares = APIRouter(tags=["Healthcares"])
 
 with open(json_filename, "r") as read_file:
     facilities = json.load(read_file)
@@ -17,7 +18,8 @@ def get_facility_ids():
 
 
 @healthcares.get("/")
-async def get_health_facilities():
+async def get_health_facilities(user: UserJSON = Depends(get_current_user)):
+    not_user(user)
     fac_name_list = []
     for facility in facilities:
         fac_name_list.append(facility['facility_name'])
@@ -26,8 +28,7 @@ async def get_health_facilities():
 
 @healthcares.get("/{facility_id}")
 async def get_health_facility_by_id(facility_id: str, user: UserJSON = Depends(get_current_user)):
-    if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please do register")
+    not_user(user)
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"message": "The facility you are looking for is not available"}
@@ -39,10 +40,7 @@ async def get_health_facility_by_id(facility_id: str, user: UserJSON = Depends(g
 
 @healthcares.post("/new_facilities")
 async def create_health_facility(add_facility: HealthFacility, user: UserJSON = Depends(get_current_user)):
-    if not user.admin_status:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
-
-    add_facility.facility_id = len(get_facility_ids())
+    not_admin(user)
 
     for facility in facilities:
         if add_facility.coordinates.longitude == facility['coordinates']['longitude'] and add_facility.coordinates.latitude == facility['coordinates']['latitude']:
@@ -52,14 +50,12 @@ async def create_health_facility(add_facility: HealthFacility, user: UserJSON = 
     with open(json_filename, "w") as write_file:
         json.dump(facilities, write_file, indent=4)
 
-    return {"message": "Facility added successfully"}
+    return [{"message": "Facility added successfully"},{"facility_made": add_facility}]
 
 
 @healthcares.put("/update_facility")
-async def update_health_facility(facility_id: str, update_fac: FacilityUpdate,
-                                 user: UserJSON = Depends(get_current_user)):
-    if not user.admin_status:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
+async def update_health_facility(facility_id: str, update_fac: FacilityUpdate, user: UserJSON = Depends(get_current_user)):
+    not_admin(user)
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"The facility you are looking for is not available"}
@@ -77,8 +73,7 @@ async def update_health_facility(facility_id: str, update_fac: FacilityUpdate,
 
 @healthcares.delete('/delete_facility')
 async def delete_health_facility(facility_id: str, user: UserJSON = Depends(get_current_user)):
-    if not user.admin_status:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have admin privileges")
+    not_admin(user)
     global facilities
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:

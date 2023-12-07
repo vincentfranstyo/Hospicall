@@ -7,5 +7,5 @@ url_dummy = 'http://127.0.0.1:3000/'
 
 def get_psychologist_list():
     headers = {'Authorization': f'Bearer {get_token()}'}
-    psychologist = requests.get(url_dummy + 'psychologist/', headers=headers)
+    psychologist = requests.get(url_real + 'psychologist/', headers=headers)
     return psychologist.json()

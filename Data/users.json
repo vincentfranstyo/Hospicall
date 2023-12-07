@@ -8,5 +8,15 @@
         "hashed_password": "$2a$04$M.FFCq3svZiF.Lt4AMK1geRw29eJHiLjcDU1gAqygSAznqw85W8OO",
         "phone_number": "+6285368768767",
         "admin_status": true
+    },
+    {
+        "id": "2",
+        "first_name": "Alysia",
+        "last_name": "Makmur",
+        "email": "alysia0makmur@gmail.com",
+        "username": "alysMata",
+        "hashed_password": "$2b$12$MDW4gE7r1iW2mtEQQ8b6jOkbhXpBSh7bNVClnW7PQOI7vcfqbWjxG",
+        "phone_number": "+6285312345678",
+        "admin_status": false
     }
 ]
