@@ -12,5 +12,19 @@
         "psychologist_id": "2",
         "health_facility_id": "2",
         "attended_status": "false"
+    },
+    {
+        "appointment_id": "3",
+        "user_id": "2",
+        "psychologist_id": "1",
+        "health_facility_id": "3",
+        "attended_status": "false"
+    },
+    {
+        "appointment_id": "4",
+        "user_id": "2",
+        "psychologist_id": "1",
+        "health_facility_id": "3",
+        "attended_status": "false"
     }
 ]

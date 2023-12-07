@@ -9,3 +9,9 @@ def get_psychologist_list():
     headers = {'Authorization': f'Bearer {get_token()}'}
     psychologist = requests.get(url_real + 'psychologist/', headers=headers)
     return psychologist.json()
+
+
+def get_psycho_by_id(psycho_id: int):
+    headers = {'Authorization': f'Bearer {get_token()}'}
+    psychologist = requests.get(url_real + 'psychologist/' + str(psycho_id), headers=headers)
+    return psychologist.json()

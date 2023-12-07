@@ -125,11 +125,11 @@ class FacilityUpdate(BaseModel):
 
 
 class Appointment(BaseModel):
-    appointment_id: str = str(len(appointments) + 1)
+    appointment_id: str = Field(default_factory=lambda: str(len(appointments) + 1))
     user_id: str
     psychologist_id: str
     health_facility_id: str
-    attended_status: str = Field(default_factory="false")
+    attended_status: str = Field(default_factory=lambda: "false")
 
 
 class AppointmentUpdate(BaseModel):
