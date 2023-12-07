@@ -15,21 +15,31 @@ facilities = read_hf_file(hf_json)
 
 
 def get_facility_ids():
+    facilities = read_hf_file(hf_json)
     return [facility["facility_id"] for facility in facilities]
 
 
-@healthcares.get("/")
+@healthcares.get("/facilities_name")
 async def get_health_facilities(user: UserJSON = Depends(get_current_user)):
     not_user(user)
+    facilities = read_hf_file(hf_json)
     fac_name_list = []
     for facility in facilities:
         fac_name_list.append(facility['facility_name'])
     return fac_name_list
 
 
+@healthcares.get("/all_facilities")
+async def get_health_facilities(user: UserJSON = Depends(get_current_user)):
+    not_user(user)
+    facilities = read_hf_file(hf_json)
+    return facilities
+
+
 @healthcares.get("/{facility_id}")
 async def get_health_facility_by_id(facility_id: str, user: UserJSON = Depends(get_current_user)):
     not_user(user)
+    facilities = read_hf_file(hf_json)
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"message": "The facility you are looking for is not available"}
@@ -43,6 +53,7 @@ async def get_health_facility_by_id(facility_id: str, user: UserJSON = Depends(g
 async def create_health_facility(add_facility: HealthFacility, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
 
+    facilities = read_hf_file(hf_json)
     for facility in facilities:
         if add_facility.coordinates.longitude == facility['coordinates']['longitude'] and add_facility.coordinates.latitude == facility['coordinates']['latitude']:
             return {"message": "The facility at that coordinate already exists"}
@@ -56,24 +67,29 @@ async def create_health_facility(add_facility: HealthFacility, user: UserJSON = 
 @healthcares.put("/update_facility")
 async def update_health_facility(facility_id: str, update_fac: FacilityUpdate, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
+
+    facilities = read_hf_file(hf_json)
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"The facility you are looking for is not available"}
 
+    updated_facility = {}
     for facility in facilities:
         if facility['facility_id'] == facility_id:
-            update_data = {key: value for key, value in update_fac.dict().items() if value}
+            update_data = {key: value for key, value in update_fac.dict().items() if value is not None and value != "string"}
             facility.update(update_data)
+            updated_facility = facility
 
     write_hf_file(hf_json, facilities)
 
-    return {"message": "Facilities updated successfully"}
+    return [{"message": "Facilities updated successfully"}, {"updated_facility": updated_facility}]
 
 
 @healthcares.delete('/delete_facility')
 async def delete_health_facility(facility_id: str, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
-    global facilities
+
+    facilities = read_hf_file(hf_json)
     facility_ids = get_facility_ids()
     if facility_id not in facility_ids:
         return {"message": "The facility you are looking for is not available"}

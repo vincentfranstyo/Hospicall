@@ -29,7 +29,9 @@ def not_admin(user: UserJSON = Depends(get_current_user)):
 
 
 @user.get("/")
-async def get_users():
+async def get_users(user: UserJSON = Depends(get_current_user)):
+    not_admin(user)
+    users = read_user_file(user_json)
     users_fullname = []
     for user in users:
         users_fullname.append(user['first_name'] + " " + user['last_name'])
@@ -39,6 +41,7 @@ async def get_users():
 @user.get("/{user_id}")
 async def get_user_by_id(user_id: str, user: UserJSON = Depends(get_current_user)):
     not_user(user)
+    users = read_user_file(user_json)
     users_id = get_users_id()
     if user_id not in users_id:
         return {"message": "The user you are looking for is nowhere to be found"}
@@ -58,24 +61,29 @@ async def add_user(new_user: UserIn, user: UserJSON = Depends(get_current_user))
 @user.put("/edit_user")
 async def update_user(user_id: str, update_user: UserUpdate, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
+    users = read_user_file(user_json)
     users_id = get_users_id()
     if user_id not in users_id:
         return {"The user you are looking for is not available"}
 
+    updated_user = {}
+
     for user in users:
         if user['id'] == user_id:
-            update_data = {key: value for key, value in update_user.dict().items() if value}
+            update_data = {key: value for key, value in update_user.dict().items() if value is not None and value != "string"}
             user.update(update_data)
+            updated_user = user
 
     write_user_file(user_json, users)
 
-    return {"message": "users updated successfully"}
+    return [{"message": "users updated successfully"}, {"updated_user": updated_user}]
 
 
 @user.delete('/delete_user')
 async def delete_user(user_id: str, user: UserJSON = Depends(get_current_user)):
     not_admin(user)
     global users
+    users = read_user_file(user_json)
     users_id = get_users_id()
     if user_id not in users_id:
         return {"message": "The user you are looking for is not available"}

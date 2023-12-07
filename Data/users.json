@@ -18,5 +18,15 @@
         "hashed_password": "$2b$12$MDW4gE7r1iW2mtEQQ8b6jOkbhXpBSh7bNVClnW7PQOI7vcfqbWjxG",
         "phone_number": "+6285312345678",
         "admin_status": false
+    },
+    {
+        "id": "3",
+        "first_name": "string",
+        "last_name": "string",
+        "email": "string",
+        "username": "bowowo",
+        "hashed_password": "$2b$12$QQjMH9pwv4H.qKlCBLbRTOXsDHRF/cChhG99dfLDruEG0Ei85/nDO",
+        "phone_number": "string",
+        "admin_status": false
     }
 ]

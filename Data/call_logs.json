@@ -1,12 +1,12 @@
 [
     {
         "call_id": "1",
-        "call_date": "2023-11-06",
-        "call_time": "12:34:56",
-        "callee_number": "444-3333",
+        "call_date": "string",
+        "call_time": "string",
+        "callee_number": "bca",
         "caller_number": "unknown",
-        "call_duration": "00:05:23",
-        "call_status": "completed"
+        "call_duration": "string",
+        "call_status": "string"
     },
     {
         "call_id": "2",
@@ -67,35 +67,17 @@
         "call_date": "2023-11-07",
         "call_time": "01:11:23",
         "callee_number": "+6287890765",
-        "caller_number": "unknown",
+        "caller_number": "none",
         "call_duration": "10:17:04",
         "call_status": "completed"
     },
     {
         "call_id": "9",
-        "call_date": "2023-11-07",
-        "call_time": "01:43:42",
-        "callee_number": "+6285365347656",
-        "caller_number": "unknown",
-        "call_duration": "18:42:53",
-        "call_status": "completed"
-    },
-    {
-        "call_id": "10",
-        "call_date": "2023-12-02",
-        "call_time": "23:38:05",
-        "callee_number": "+6287890765",
-        "caller_number": "unknown",
-        "call_duration": "11:32:09",
-        "call_status": "completed"
-    },
-    {
-        "call_id": "11",
         "call_date": "2023-12-07",
-        "call_time": "17:45:45",
-        "caller_number": "+6285312345678",
+        "call_time": "21:59:44",
+        "caller_number": "+6285368768767",
         "callee_number": "+6285365347656",
-        "call_duration": "20:19:01",
+        "call_duration": "09:55:49",
         "call_status": "completed"
     }
 ]

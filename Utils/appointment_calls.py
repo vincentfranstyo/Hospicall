@@ -2,9 +2,9 @@ import sys
 
 from fastapi import APIRouter, Depends
 
-from Models.models import Coordinate, Appointment
+from Models.models import Coordinate, Appointment, MakeAppointment
 from Models.user import UserJSON
-from Utils.api_psychos import get_psychologist_list
+from Utils.api_psychos import get_psychologist_list, get_psycho_by_id
 from Utils.appointment import create_appointment, get_appointment_by_id
 from Utils.auth import get_current_user
 from Utils.call_logs import create_call_log
@@ -42,31 +42,61 @@ async def get_closest_fac(longitude: float, latitude: float, user: UserJSON = De
     return [{"Message": "Here is the closest health facility to you"}, {"closest_fac": closest_fac}]
 
 
+@appointment_calls.get('/get_all_psychologists')
+async def get_all_psychologists(user: UserJSON = Depends(get_current_user)):
+    not_user(user)
+    return get_psychologist_list()
+
+
+@appointment_calls.get('/get_psychologists_by_id')
+async def get_psychologist_by_id(psychologist_id: int, user: UserJSON = Depends(get_current_user)):
+    not_user(user)
+
+    psycho = get_psycho_by_id(psychologist_id)
+    return psycho
+
+
 @appointment_calls.get('/available_psychologists')
-async def get_available_psychologists_based_on_facility(longitude: float, latitude: float,
-                                                        user: UserJSON = Depends(get_current_user)):
+async def get_available_psychologists_based_on_facility(longitude: float, latitude: float, user: UserJSON = Depends(get_current_user)):
     not_user(user)
 
     closest_fac_res = await get_closest_fac(longitude=longitude, latitude=latitude, user=user)
 
     closest_fac = closest_fac_res[1]['closest_fac']
-    psychos_id = closest_fac['psychologist_list']
+    psycho_ids = closest_fac['psychologist_list']
 
     all_psychos = get_psychologist_list()
     list_of_psychos_in_fac = []
 
     for psycho in all_psychos:
-        if psycho['psychologist_id'] in psychos_id:
+        if psycho['psychologist_id'] in psycho_ids:
             list_of_psychos_in_fac.append(psycho)
 
     return list_of_psychos_in_fac
 
 
+@appointment_calls.get('/find_psychologists_location')
+async def find_psychologists_location_by_id(psychologist_id: int, user: UserJSON = Depends(get_current_user)):
+    not_user(user)
+    facs_list = []
+    for fac in facilities:
+        if psychologist_id in fac['psychologist_list']:
+            facs_list.append(fac)
+    return facs_list
+
+
 @appointment_calls.post('/make_appointment')
 async def make_appointment(psychologist_id: str, health_facility_id: str, user: UserJSON = Depends(get_current_user)):
     not_user(user)
-    add_appointment = Appointment(user_id=user.dict()['id'], psychologist_id=psychologist_id, health_facility_id=health_facility_id)
-    made_appointment = await create_appointment(add_appointment=add_appointment, user=user)
+    add_appointment = MakeAppointment(user_id=user.dict()['id'], psychologist_id=psychologist_id, health_facility_id=health_facility_id)
+    new_appointment = Appointment(
+        appointment_id=add_appointment.dict()['appointment_id'],
+        user_id=add_appointment.dict()['user_id'],
+        psychologist_id=add_appointment.dict()['psychologist_id'],
+        health_facility_id=add_appointment.dict()['health_facility_id'],
+        attended_status=add_appointment.dict()['attended_status']
+    )
+    made_appointment = await create_appointment(add_appointment=new_appointment, user=user)
     return made_appointment
 
 
@@ -88,24 +118,3 @@ async def make_appointment_call(appointment_id: str, user: UserJSON = Depends(ge
 
     return made_call
 
-
-@appointment_calls.get('/find_psychologists_location')
-async def find_psychologists_location_by_id(psychologist_id: int, user: UserJSON = Depends(get_current_user)):
-    not_user(user)
-    facs_list = []
-    for fac in facilities:
-        if psychologist_id in fac['psychologist_list']:
-            facs_list.append(fac)
-    return facs_list
-
-
-@appointment_calls.get('/get_all_psychologists')
-async def get_all_psychologists(user: UserJSON = Depends(get_current_user)):
-    not_user(user)
-    return get_psychologist_list()
-
-
-@appointment_calls.get('/psychologist_by_id')
-async def get_psychologist_by_id(psychologist_id: int, user: UserJSON = Depends(get_current_user)):
-    not_user(user)
-    return get_psychologist_by_id()

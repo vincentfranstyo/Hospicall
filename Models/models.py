@@ -70,11 +70,12 @@ class CallLog(BaseModel):
 
 
 class UpdateCall(BaseModel):
-    call_date: Optional[str]
-    call_time: Optional[str]
-    callee_number: Optional[str]
-    call_duration: Optional[str]
-    call_status: Optional[str]
+    call_date: Optional[str] = None
+    call_time: Optional[str] = None
+    callee_number: Optional[str] = None
+    caller_number: Optional[str] = None
+    call_duration: Optional[str] = None
+    call_status: Optional[str] = None
 
 
 class Coordinate(BaseModel):
@@ -124,7 +125,7 @@ class FacilityUpdate(BaseModel):
     psychologist_list: Optional[List[int]]
 
 
-class Appointment(BaseModel):
+class MakeAppointment(BaseModel):
     appointment_id: str = Field(default_factory=lambda: str(len(appointments) + 1))
     user_id: str
     psychologist_id: str
@@ -132,7 +133,15 @@ class Appointment(BaseModel):
     attended_status: str = Field(default_factory=lambda: "false")
 
 
+class Appointment(BaseModel):
+    appointment_id: str = str(len(appointments) + 1)
+    user_id: str
+    psychologist_id: str
+    health_facility_id: str
+    attended_status: str = "false"
+
+
 class AppointmentUpdate(BaseModel):
-    pyschologist_id: Optional[str]
+    psychologist_id: Optional[str]
     health_facility_id: Optional[str]
     attended_status: Optional[str]

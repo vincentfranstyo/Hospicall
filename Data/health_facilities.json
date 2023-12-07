@@ -75,26 +75,24 @@
         ]
     },
     {
-        "facility_id": 3,
-        "facility_name": "rs me",
-        "facility_type": "Rumah Sakit",
+        "facility_id": "4",
+        "facility_name": "my hospi",
+        "facility_type": "string",
         "address": {
-            "street": "Jl. Cisitu Lama No. 2",
-            "city": "Bandung",
-            "province": "Jawa Barat"
+            "street": "string",
+            "city": "string",
+            "province": "string"
         },
         "coordinates": {
             "longitude": 0.54362,
             "latitude": 0.87645
         },
-        "phone_number": "+6285376564565",
+        "phone_number": "string",
         "bed_capacity": 5,
         "doctor_count": 8,
         "psychologist_count": 3,
         "psychologist_list": [
-            8,
-            1,
-            2
+            0
         ]
     }
 ]

@@ -13,5 +13,5 @@ def get_psychologist_list():
 
 def get_psycho_by_id(psycho_id: int):
     headers = {'Authorization': f'Bearer {get_token()}'}
-    psychologist = requests.get(url_real + 'psychologist/' + str(psycho_id), headers=headers)
+    psychologist = requests.get(url_real + 'psychologist/{psychologist_id}?psy_id=' + str(psycho_id), headers=headers)
     return psychologist.json()
