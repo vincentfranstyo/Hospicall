@@ -7,7 +7,18 @@ from Utils.users import user as user_router
 from Utils.appointment import appointment as appointment_router
 from Utils.appointment_calls import appointment_calls as app_call_router
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(call_router, prefix='/call')
 app.include_router(healthcare_router, prefix='/healthcare')

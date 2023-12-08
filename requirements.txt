@@ -5,3 +5,4 @@ PyJWT==2.8.0
 randomtimestamp==2.2
 Requests==2.31.0
 uvicorn>=0.15.0,<0.16.0
+python-multipart ~= 0.0.6

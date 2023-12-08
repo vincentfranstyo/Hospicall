@@ -38,5 +38,45 @@
         "hashed_password": "$2b$12$txPtukuShiBgbaYKmEsWuumCh5PrpU5Z4HactqTHYh9kb.KMV4QAG",
         "phone_number": "none",
         "admin_status": false
+    },
+    {
+        "id": "5",
+        "first_name": "mikasa",
+        "last_name": "ackerman",
+        "email": "mikarman@gmail.com",
+        "username": "mikarman",
+        "hashed_password": "$2b$12$g6M1xK4AfnXR9zmTVI7heeCmVSznS3rzJKBFfJRxNVQMLXHT2I0km",
+        "phone_number": "+6287674563343",
+        "admin_status": false
+    },
+    {
+        "id": "6",
+        "first_name": "levy",
+        "last_name": "juanita",
+        "email": "lejuanita@gmail.com",
+        "username": "lejuanita",
+        "hashed_password": "$2b$12$M62z7Rgv4epFDrfq8Ogrl.E6oxf3nSlIFCg16IOPhwPOfgGCH8YqO",
+        "phone_number": "+6286576547656",
+        "admin_status": false
+    },
+    {
+        "id": "7",
+        "first_name": "steve",
+        "last_name": "rogers",
+        "email": "steveroger@gmail.com",
+        "username": "steveroger",
+        "hashed_password": "$2b$12$vcqleOoTNG3oE0wkDBLCq.LPBnflnDISI/9B7uiXOOb91Yh5DEIue",
+        "phone_number": "+6245676545345",
+        "admin_status": false
+    },
+    {
+        "id": "8",
+        "first_name": "peter",
+        "last_name": "parker",
+        "email": "peterparker@gmail.com",
+        "username": "peterparker",
+        "hashed_password": "$2b$12$PySgLL406N.qvYEF5s.HLOgEt8P6Y0B92JyOBCxb5GFgspexxjXdu",
+        "phone_number": "+6245676545345",
+        "admin_status": false
     }
 ]

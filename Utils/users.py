@@ -32,10 +32,7 @@ def not_admin(user: UserJSON = Depends(get_current_user)):
 async def get_users(user: UserJSON = Depends(get_current_user)):
     not_admin(user)
     users = read_user_file(user_json)
-    users_fullname = []
-    for user in users:
-        users_fullname.append(user['first_name'] + " " + user['last_name'])
-    return users_fullname
+    return users
 
 
 @user.get("/{user_id}")
