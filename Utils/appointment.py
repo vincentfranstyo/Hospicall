@@ -29,7 +29,7 @@ async def get_appointments(user: UserJSON = Depends(get_current_user)):
 @appointment.get("/{appointment_id}")
 async def get_appointment_by_id(appointment_id: str, user: UserJSON = Depends(get_current_user)):
     not_user(user)
-    appointments = read_appointment_file(app_json)
+    appointments = await get_appointments()
     appointment_ids = get_appointment_ids()
     if appointment_id not in appointment_ids:
         return {"message": "The appointment does not exist"}
@@ -88,11 +88,8 @@ async def delete_health_appointment(appointment_id: str, user: UserJSON = Depend
     if not appointments_to_delete:
         return {"message": "The appointment you are looking for is not available"}
 
-    appointment_username = appointments_to_delete[0]['username']
-    appointment_psychologist_name = appointments_to_delete[0]['psychologist_name']
-    appointment_healthcare_name = appointments_to_delete[0]['health_facility_name']
     appointments = [appointment for appointment in appointments if appointment not in appointments_to_delete]
 
     write_app_file(app_json, appointments)
 
-    return {"Message": "Appointment for " + appointment_username + "with  " + appointment_psychologist_name + " at " + appointment_healthcare_name + " deleted successfully"}
+    return {"Message": "Appointment with " + appointment_id + " deleted successfully"}
