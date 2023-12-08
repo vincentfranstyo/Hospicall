@@ -50,12 +50,38 @@ async def get_healthcare_number(longitude: float, latitude: float):
     return {"closest_facilities": closest_facilities}
 
 
-@emergencies.post('/')
-async def make_call(longitude: float, latitude: float, user: Optional[UserJSON] = Depends(get_current_user)):
+async def get_user_or_none(user: UserJSON = Depends(get_current_user)) -> Optional[UserJSON]:
+    return user
+
+
+@emergencies.post('/auth_call')
+async def make_authenticated_call(longitude: float, latitude: float, user: UserJSON = Depends(get_current_user)):
     closest_facilities = await get_healthcare_number(longitude, latitude)
     closest_facility = closest_facilities['closest_facilities']
     callee_number = closest_facility['phone_number']
-    caller_number = user.phone_number if user else "unknown"
+    caller_number = user.phone_number
+
+    made_call = {}
+    if closest_facility:
+        add_call = CallLog(callee_number=callee_number, caller_number=caller_number)
+        call_added = add_call.dict()
+
+        call_logs.append(call_added)
+
+        with open(call_logs_json, "w") as call_file:
+            json.dump(call_logs, call_file, indent=4)
+
+        made_call = call_added
+
+    return [{"message": f"Your call to {closest_facility['facility_name']} has been made"}, {"call_made": made_call}]
+
+
+@emergencies.post('/')
+async def make_call(longitude: float, latitude: float):
+    closest_facilities = await get_healthcare_number(longitude, latitude)
+    closest_facility = closest_facilities['closest_facilities']
+    callee_number = closest_facility['phone_number']
+    caller_number = "unknown"
 
     made_call = {}
     if closest_facility:

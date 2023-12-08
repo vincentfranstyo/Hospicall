@@ -79,5 +79,14 @@
         "callee_number": "+6285365347656",
         "call_duration": "09:55:49",
         "call_status": "completed"
+    },
+    {
+        "call_id": "10",
+        "call_date": "2023-12-08",
+        "call_time": "13:01:21",
+        "caller_number": "unknown",
+        "callee_number": "+6285365347656",
+        "call_duration": "16:46:17",
+        "call_status": "completed"
     }
 ]
